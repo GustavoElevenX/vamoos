@@ -21,11 +21,13 @@ export async function POST(req: NextRequest) {
   if (!email) return NextResponse.json({ error: 'E-mail obrigatório' }, { status: 400 });
 
   const admin = createAdminClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const origin = req.headers.get('origin') ?? req.headers.get('x-forwarded-host')
+    ? `https://${req.headers.get('x-forwarded-host')}`
+    : process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
   const { error } = await admin.auth.admin.inviteUserByEmail(email, {
     data: { nome: nome ?? '' },
-    redirectTo: `${siteUrl}/auth/callback`,
+    redirectTo: `${origin}/auth/callback`,
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
