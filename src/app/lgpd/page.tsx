@@ -57,9 +57,7 @@ export default function LGPDPage() {
                   Você pode, a qualquer momento, solicitar acesso, correção, exclusão ou portabilidade dos seus dados através do e-mail:{' '}
                   <a
                     href="mailto:privacidade@vamo.com.br"
-                    style={{ color: '#00FF57', textDecoration: 'none' }}
-                    onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
-                    onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+                    className="lgpd-link"
                   >
                     privacidade@vamo.com.br
                   </a>
@@ -74,9 +72,7 @@ export default function LGPDPage() {
                   Para dúvidas sobre esta política, entre em contato com nosso Encarregado de Proteção de Dados (DPO) pelo e-mail:{' '}
                   <a
                     href="mailto:dpo@vamo.com.br"
-                    style={{ color: '#00FF57', textDecoration: 'none' }}
-                    onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
-                    onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+                    className="lgpd-link"
                   >
                     dpo@vamo.com.br
                   </a>
