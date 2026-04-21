@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Settings, Target, Clock, Shield, Save } from 'lucide-react';
+import { Settings, Target, Clock, Shield, Save, Users, Mail, Crown, UserCheck } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
@@ -15,6 +15,7 @@ const TABS = [
   { key: 'sla',       label: 'SLAs' },
   { key: 'politicas', label: 'Políticas' },
   { key: 'geral',     label: 'Geral' },
+  { key: 'equipe',    label: 'Equipe' },
 ];
 
 type Settings = Record<string, string>;
@@ -87,10 +88,19 @@ function SectionDivider({ label }: { label: string }) {
   );
 }
 
+type Member = { id: string; user_id: string; role: string; nome: string | null; created_at: string };
+
 export default function ConfiguracoesPage() {
   const [tab, setTab] = useState('metas');
   const [settings, setSettings] = useState<Settings>({});
   const [saving, setSaving] = useState(false);
+
+  // Equipe state
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteNome, setInviteNome] = useState('');
+  const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -102,6 +112,57 @@ export default function ConfiguracoesPage() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (tab !== 'equipe') return;
+    setLoadingMembers(true);
+    const supabase = createClient();
+    supabase
+      .from('user_roles')
+      .select('id, user_id, role, nome, created_at')
+      .order('created_at')
+      .then(({ data }) => {
+        setMembers((data as Member[]) ?? []);
+        setLoadingMembers(false);
+      });
+  }, [tab]);
+
+  async function changeRole(memberId: string, newRole: string) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('user_roles')
+      .update({ role: newRole })
+      .eq('id', memberId);
+    if (error) toast.error('Erro ao alterar papel: ' + error.message);
+    else {
+      toast.success('Papel atualizado!');
+      setMembers(prev => prev.map(m => m.id === memberId ? { ...m, role: newRole } : m));
+    }
+  }
+
+  async function sendInvite(e: React.FormEvent) {
+    e.preventDefault();
+    if (!inviteEmail) return;
+    setInviting(true);
+    try {
+      const res = await fetch('/api/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail, nome: inviteNome }),
+      });
+      const json = await res.json();
+      if (!res.ok) toast.error(json.error ?? 'Erro ao enviar convite');
+      else {
+        toast.success(`Convite enviado para ${inviteEmail}!`);
+        setInviteEmail('');
+        setInviteNome('');
+      }
+    } catch {
+      toast.error('Erro ao enviar convite. Tente novamente.');
+    } finally {
+      setInviting(false);
+    }
+  }
 
   function val(key: string, fallback = '') {
     return settings[key] ?? fallback;
@@ -255,6 +316,101 @@ export default function ConfiguracoesPage() {
                 <Save style={{ width: 13, height: 13 }} /> {saving ? 'Salvando…' : 'Salvar'}
               </Button>
             </SectionCard>
+          )}
+
+          {/* Equipe */}
+          {tab === 'equipe' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+              {/* Convidar */}
+              <SectionCard title="Convidar Membro" icon={Mail}>
+                <p style={{ fontSize: 12, color: 'var(--text-faint)', marginBottom: 14 }}>
+                  Envie um convite por e-mail. O convidado receberá um link para criar a conta e terá acesso a todos os dados da plataforma.
+                </p>
+                <form onSubmit={sendInvite} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <FieldGrid>
+                    <Field label="Nome">
+                      <Input
+                        placeholder="Nome do sócio"
+                        value={inviteNome}
+                        onChange={e => setInviteNome(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="E-mail">
+                      <Input
+                        type="email"
+                        placeholder="socio@email.com"
+                        value={inviteEmail}
+                        onChange={e => setInviteEmail(e.target.value)}
+                        required
+                      />
+                    </Field>
+                  </FieldGrid>
+                  <div>
+                    <Button type="submit" disabled={inviting} style={{ gap: 6 }}>
+                      <Mail style={{ width: 13, height: 13 }} />
+                      {inviting ? 'Enviando…' : 'Enviar Convite'}
+                    </Button>
+                  </div>
+                </form>
+              </SectionCard>
+
+              {/* Membros */}
+              <SectionCard title="Membros da Equipe" icon={Users}>
+                {loadingMembers ? (
+                  <p style={{ fontSize: 12, color: 'var(--text-faint)' }}>Carregando…</p>
+                ) : members.length === 0 ? (
+                  <p style={{ fontSize: 12, color: 'var(--text-faint)' }}>Nenhum membro encontrado.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {members.map(m => (
+                      <div
+                        key={m.id}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '10px 14px', borderRadius: 6,
+                          background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{
+                            width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: m.role === 'admin' ? 'rgba(0,255,87,0.1)' : 'rgba(255,255,255,0.06)',
+                            border: `1px solid ${m.role === 'admin' ? 'rgba(0,255,87,0.25)' : 'var(--border)'}`,
+                          }}>
+                            {m.role === 'admin'
+                              ? <Crown style={{ width: 13, height: 13, color: '#00FF57' }} />
+                              : <UserCheck style={{ width: 13, height: 13, color: 'var(--text-muted)' }} />
+                            }
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+                              {m.nome ?? 'Sem nome'}
+                            </p>
+                            <p style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 1 }}>
+                              {m.role === 'admin' ? 'Administrador' : 'Colaborador'}
+                            </p>
+                          </div>
+                        </div>
+                        <select
+                          value={m.role}
+                          onChange={e => changeRole(m.id, e.target.value)}
+                          style={{
+                            fontSize: 12, padding: '4px 8px', borderRadius: 5, cursor: 'pointer',
+                            background: 'var(--bg-hover)', border: '1px solid var(--border)',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="colaborador">Colaborador</option>
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </SectionCard>
+
+            </div>
           )}
 
         </div>
