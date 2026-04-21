@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* === Brand === */
+  --accent:        #00FF57;
+  --accent-dim:    #00CC44;
+  --accent-subtle: rgba(0, 255, 87, 0.08);
+  --accent-border: rgba(0, 255, 87, 0.18);
+
+  /* === Backgrounds — verde-escuro igual ao screenshot === */
+  --bg-app:      #070c07;
+  --bg-subtle:   #090e09;
+  --bg-card:     #0d160d;
+  --bg-hover:    #121c12;
+  --bg-active:   #162216;
+  --bg-overlay:  #1a281a;
+
+  /* Aliases compat */
+  --bg-primary:   #070c07;
+  --bg-secondary: #090e09;
+  --bg-elevated:  #0d160d;
+  --bg-surface:   #090e09;
+  --green-primary: #00FF57;
+  --green-hover:   #00CC44;
+  --green-dim:     #00BB40;
+  --green-glow:    rgba(0, 255, 87, 0.15);
+  --green-glow-sm: rgba(0, 255, 87, 0.08);
+
+  /* === Borders — verde sutil === */
+  --border:              rgba(0, 255, 87, 0.1);
+  --border-strong:       rgba(0, 255, 87, 0.18);
+  --border-hover:        rgba(0, 255, 87, 0.28);
+  --border-brand:        rgba(0, 255, 87, 0.22);
+  --border-brand-strong: rgba(0, 255, 87, 0.4);
+
+  /* === Text === */
+  --text-primary:   #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.65);
+  --text-muted:     rgba(255, 255, 255, 0.40);
+  --text-faint:     rgba(255, 255, 255, 0.22);
+
+  /* === Font === */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; font-optical-sizing: auto; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.016em;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(0, 255, 87, 0.15); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 87, 0.28); }
+
+/* ── Keyframes ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Utilities ── */
+.page-content    { animation: fadeUp 0.22s ease both; }
+.animate-fade-in { animation: fadeUp 0.22s ease both; }
+
+/* ── Focus ── */
+*:focus-visible {
+  outline: 2px solid rgba(0, 255, 87, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Selection ── */
+::selection { background: rgba(0, 255, 87, 0.15); }
+
+/* ── Kanban ── */
+.kanban-column {
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+}
+
+/* ── Gradient text brand ── */
+.gradient-text-brand {
+  background: linear-gradient(135deg, #00FF57 20%, #00BB40);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
