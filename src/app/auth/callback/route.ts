@@ -7,6 +7,8 @@ export async function GET(request: Request) {
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/dashboard';
 
+  const type = searchParams.get('type');
+
   if (code) {
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -32,6 +34,10 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Invited users must set a password before continuing
+      if (type === 'invite') {
+        return NextResponse.redirect(`${origin}/auth/set-password`);
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
